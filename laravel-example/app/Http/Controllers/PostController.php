@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Traits\ApiResponse;
-// TODO: Eliminar
-// use Illuminate\Support\Facades\DB;
+use App\Http\Requests\StorePostRequest;
 
 class PostController extends Controller
 {
     use ApiResponse;
+
     /**
      * Display a listing of the resource.
      */
@@ -24,14 +24,10 @@ class PostController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StorePostRequest $request)
     {
-        // $newPost = new Post();
-        // $result = $newPost->fill($request->only(['title' ,'content', 'status']))->save();
-        $newPost = Post::updateOrCreate(
-            ['title' => $request->title], // Las columnas a comparar para la validación
-            $request->only(['title', 'content', 'status'] // COlumnas a registrar o actualizar
-        ));
+        $data = $request->validated();
+        $newPost = Post::create($data);
         return $this->ok("Todo melo mor", [$newPost]);
     }
 
