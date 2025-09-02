@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-class StorePostRequest extends FormRequest
+class UpdatePostRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -31,12 +31,18 @@ class StorePostRequest extends FormRequest
      */
     public function rules(): array
     {
+        $postId = $this->route('post');
         return [
-            'title' => ['required', 'string', 'min:4', 'max:200'],
-            'slug' => ['required', 'string', 'max:220', 'unique:posts,slug'], // unique: tabla, columna
-            'content' => ['required', 'string', 'min:20'],
+            'title' => ['sometimes', 'string', 'min:4', 'max:200'],
+            'slug' => [
+                'sometimes', 'string', 'max:220', 'unique:posts,slug',
+                Rule::unique('posts', 'slug')
+                    ->ignore($postId)
+                    ->whereNull('deleted_at') // Respetamos el softDeletes
+            ],
+            'content' => ['sometimes', 'string', 'min:20'],
 
-            'status' => ['required', Rule::in(['draft', 'published', 'archived', 'default'])],
+            'status' => ['sometimes', Rule::in(['draft', 'published', 'archived', 'default'])],
 
             'published_at' => ['nullable', 'date', 'required_if:status,published', 'before_or_equal:now'],
 
@@ -49,14 +55,8 @@ class StorePostRequest extends FormRequest
             'meta.seo_desc' => ['nullable', 'string', 'max:120'],
 
             'category_ids' => ['nullable', 'array', 'max:10'],
-            'category_ids.*' => ['integer', 'exists:categories,id'] // exists:tabla, columna
+            'category_ids.*' => ['integer', 'exists:categories,id']
         ];
     }
 
-    public function messages()
-    {
-        return [
-            'title.required' => 'El Titulo es requerido y obligatorio'
-        ];
-    }
 }
