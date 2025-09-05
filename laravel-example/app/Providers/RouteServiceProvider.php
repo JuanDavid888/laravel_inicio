@@ -23,6 +23,7 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Limita las peticiones en api
         RateLimiter::for('api', function(Request $request) {
             if($userId = optional($request->user())->getAuthIdentifier()) {
                 return Limit::perMinute(100)->by('uid:'.$userId);
