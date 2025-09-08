@@ -7,13 +7,12 @@ use App\Http\Requests\UpdatePostRequest;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
 use App\Traits\ApiResponse;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\RecordsNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-
-// //TODO: Eliminar
-// use Illuminate\Support\Facades\DB;
-
 
 class PostController extends Controller
 {
@@ -23,12 +22,8 @@ class PostController extends Controller
      */
     public function index(): JsonResponse
     {
-        // La mala practica porque tenemos un Model
-        // return response()->json(DB::table('posts')->get());
-        // return $this->ok("Todo ok, como dijo el Pibe", Post::get());
-
         $posts = Post::with('categories')->get();
-        //use App\Http\Resources\PostResource;
+        //use App\Http\Resources\PostResource
         return $this->success(PostResource::collection($posts));
     }
 
@@ -37,19 +32,19 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request): JsonResponse
     {
-
         $data = $request->validated();
 
-        if($request->hasFile('cover_image')) {
-            $data['cover_image'] = $request->file('cover_image')->store('posts','public');
+        if ($request->hasFile('cover_image')) {
+            $data['cover_image'] = $request->file('cover_image')->store('posts', 'public');
         }
+
         $newPost = Post::create($data);
 
-        if(!empty($data['category_ids'])) {
+        if (!empty($data['category_ids'])) {
             $newPost->categories()->sync($data['category_ids']);
         }
 
-        return $this->success(new PostResource($newPost), "Post creado correctamente", 201);
+        return $this->success(new PostResource($newPost), 'Post creado correctamente', 201);
     }
 
     /**
@@ -57,56 +52,61 @@ class PostController extends Controller
      */
     public function show(string $id): JsonResponse
     {
+        //$result = Post::findOrFail($id);
         $result = Post::find($id);
         if ($result) {
             return $this->success(new PostResource($result), "Todo ok, como dijo el Pibe");
         } else {
-            return $this->error("Todo mal, como NO dijo el Pibe", 404, ["id" => ["No se encontro el recurso con el id: $id"]]);
-    }
+            return $this->error("Todo mal, como NO dijo el Pibe", 404, ['id' => 'No se encontro el recurso con el id']);
+        }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdatePostRequest $request, Post $post): JsonResponse
+    public function update(UpdatePostRequest $request, Post $post)
     {
-        Log::debug('method: @update');
+        //use Illuminate\Support\Facades\Log;
         Log::debug('all:', $request->all());
         Log::debug('files:', array_keys($request->allFiles()));
         $data = $request->validated();
-
-        if($request->hasFile('cover_image')) {
+        if ($request->hasFile('cover_image')) {
             //Borrado (Opcional)
-            if($post->cover_image) {
-                //use illuminate\Support\Facades\Storage;
+            if ($post->cover_image) {
+                //use Illuminate\Support\Facades\Storage;
                 Storage::disk('public')->delete($post->cover_image);
             }
-
-            $data['cover_image'] = $request->file('cover_image')->store('posts','public');
+            $data['cover_image'] = $request->file('cover_image')->store('posts', 'public');
         }
-
         $post->update($data);
-        if(array_key_exists('category_ids', $data)) {
+
+        if (array_key_exists('category_ids', $data)) {
             $post->categories()->sync($data['category_ids'] ?? []);
         }
-
-        return $this->success(new PostResource ($post));
+        return $this->success(new PostResource($post));
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Post $post): JsonResource
+    public function destroy(Post $post): JsonResponse
     {
-        $post->delete(); // Soft delete
-
+        $post->delete(); //Soft delete
         return $this->success(null, 'Post eliminado', 204);
     }
 
     public function restore(int $id): JsonResponse
     {
-        $post = Post::onlyTrashed()->findOrFail($id);
+        Log::debug('restore: ' . $id);
+        $post = Post::onlyTrashed()->find($id);
+        if (!$post) {
+            //throw new ModelNotFoundException('Post no encontrado', 404);
+            Log::debug('restore: ' . $id);
+            throw new RecordsNotFoundException('Post no encontrado', 404);
+        }
+        Log::debug('restore: start');
         $post->restore();
+        Log::debug('restore: success');
         return $this->success($post, 'Post restaurado correctamente');
     }
 }
