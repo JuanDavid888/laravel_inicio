@@ -4,12 +4,15 @@ namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider AS ServiceProvider;
 use Laravel\Passport\Passport;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
+use App\Policies\PostPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
     // Policia de las politicas
     protected $policies = [
-        //
+        PostPolicy::class
     ];
 
     /**
@@ -23,6 +26,20 @@ class AuthServiceProvider extends ServiceProvider
         Passport::tokensExpireIn(now()->addHours(2));
         Passport::refreshTokensExpireIn(now()->addDay(30));
         Passport::personalAccessTokensExpireIn(now()->addMonths(6));
+
+        // Gate
+        Gate::define('view-health', function(User $user) {
+            return $user->hasRole(['editor', 'viewer']);
+        });
+
+        Gate::define('view-health-admin', function(User $user) {
+            return $user->hasRole(['editor', 'admin']) || $user->tokenCan('posts.admin');
+        });
+
+        // No recomendado, pero útil para pruebas
+        Gate::before(function(User $user, string $ability) {
+            return $user->hasRole(['admin']) ? true : null; // true -> concede los permisos (ability)
+        });
 
         // Scopes (Alcances - Permisos)
         // recurso.accion

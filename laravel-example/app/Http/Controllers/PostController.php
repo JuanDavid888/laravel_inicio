@@ -22,7 +22,7 @@ class PostController extends Controller
      */
     public function index(): JsonResponse
     {
-        $posts = Post::with('categories')->get();
+        $posts = Post::with('user', 'categories')->get();
         //use App\Http\Resources\PostResource
         return $this->success(PostResource::collection($posts));
     }
@@ -34,6 +34,9 @@ class PostController extends Controller
     {
         $data = $request->validated();
 
+        // Body no va a recibir id del usuario (solo del autenticado)
+        $data['user_id'] = $request->user()->id;
+
         if ($request->hasFile('cover_image')) {
             $data['cover_image'] = $request->file('cover_image')->store('posts', 'public');
         }
@@ -44,6 +47,7 @@ class PostController extends Controller
             $newPost->categories()->sync($data['category_ids']);
         }
 
+        $newPost->load(['user', 'categories']);
         return $this->success(new PostResource($newPost), 'Post creado correctamente', 201);
     }
 
@@ -55,6 +59,7 @@ class PostController extends Controller
         //$result = Post::findOrFail($id);
         $result = Post::find($id);
         if ($result) {
+            $result->load(['user', 'categories']);
             return $this->success(new PostResource($result), "Todo ok, como dijo el Pibe");
         } else {
             return $this->error("Todo mal, como NO dijo el Pibe", 404, ['id' => 'No se encontro el recurso con el id']);
@@ -79,10 +84,12 @@ class PostController extends Controller
             $data['cover_image'] = $request->file('cover_image')->store('posts', 'public');
         }
         $post->update($data);
+        // $post->refresh();
 
         if (array_key_exists('category_ids', $data)) {
             $post->categories()->sync($data['category_ids'] ?? []);
         }
+        $post->load(['user', 'categories']);
         return $this->success(new PostResource($post));
     }
 
@@ -106,6 +113,7 @@ class PostController extends Controller
         }
         Log::debug('restore: start');
         $post->restore();
+        $post->load(['user', 'categories']);
         Log::debug('restore: success');
         return $this->success($post, 'Post restaurado correctamente');
     }
