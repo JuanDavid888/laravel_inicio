@@ -10,8 +10,8 @@ use App\Models\Post;
 use App\Traits\ApiResponse;
 use Illuminate\Database\RecordsNotFoundException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
@@ -34,8 +34,8 @@ class PostController extends Controller
     {
         $data = $request->validated();
 
-        // Body no va a recibir id del usuario (solo del autenticado)
-        $data['user_id'] = $request->user()->id;
+        //Body no voy a recibir id del usuario
+        $data['user_id'] = $request->user()->id; //Siempre se toma del Token
 
         if ($request->hasFile('cover_image')) {
             $data['cover_image'] = $request->file('cover_image')->store('posts', 'public');
@@ -48,8 +48,7 @@ class PostController extends Controller
         }
 
         $newPost->load(['user', 'categories']);
-
-        // Log::debug($newPost->published_at);
+        Log::debug('Email to send: ' . $newPost->user->email);
         Mail::to($newPost->user->email)->queue(new PostCreatedMail($newPost));
 
         return $this->success(new PostResource($newPost), 'Post creado correctamente', 201);
@@ -58,7 +57,7 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id): JsonResponse
+    public function show(string $id): JsonResponse // Post $post
     {
         //$result = Post::findOrFail($id);
         $result = Post::find($id);
@@ -88,11 +87,13 @@ class PostController extends Controller
             $data['cover_image'] = $request->file('cover_image')->store('posts', 'public');
         }
         $post->update($data);
-        // $post->refresh();
+
+        //$post->refresh();
 
         if (array_key_exists('category_ids', $data)) {
             $post->categories()->sync($data['category_ids'] ?? []);
         }
+
         $post->load(['user', 'categories']);
         return $this->success(new PostResource($post));
     }

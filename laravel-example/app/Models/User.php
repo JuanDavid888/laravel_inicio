@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
-use App\Models\Post;
 
 class User extends Authenticatable
 {
@@ -61,7 +60,6 @@ class User extends Authenticatable
     public function hasRole(string|array $roles): bool
     {
         $names = is_array($roles) ? $roles : [$roles];
-        
         return $this->roles()->whereIn('name', $names)->exists();
     }
 }

@@ -1,9 +1,6 @@
 <?php
 
 namespace App\Http\Middleware;
-// Usados mayormente para autentificacion, verificacion y evito de robos, logs
-
-// Usado para continuar con el flujo de trabajo
 
 use Closure;
 use Illuminate\Http\Request;
@@ -18,10 +15,10 @@ class ForceJsonResponse
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if($request->is('api/*')) {
+        if ($request->is('api/*')) {
             $request->headers->set('Accept', 'application/json');
         }
-        
+
         return $next($request);
     }
 }

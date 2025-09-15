@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // if (Schema::hasTable('posts')) {
+        //     return;
+        // }
+
         Schema::table('posts', function (Blueprint $table) {
             // Agregar las nuevas columnas
             $table->dropColumn([
@@ -23,11 +27,11 @@ return new class extends Migration
             $table->string('cover_image')->nullable();
 
             $table->json('meta')->nullable(); // {"seo_title": "....", ....}
-            $table->json('tags')->nullable();// ['php', 'git', .....]
+            $table->json('tags')->nullable(); // ['php', 'git', .....]
 
             $table->softDeletes();
 
-            $table->index('status', 'published_at');
+            $table->index(['status', 'published_at']);
         });
     }
 
@@ -37,7 +41,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('posts', function (Blueprint $table) {
-            //Eliminar los cambiosen en el orden contrario
+            //Eliminar los cambios en el orden contrario
             $columns = [
                 'slug',
                 'published_at',
@@ -47,16 +51,19 @@ return new class extends Migration
                 'deleted_at'
             ];
 
-            for ($i=0; $i < count($columns); $i++) { 
+            for ($i = 0; $i < count($columns); $i++) {
                 $column = $columns[$i];
-                if(Schema::hasColumn('posts', $column)) {
+                if (Schema::hasColumn('posts', $column)) {
                     $table->dropColumn($column);
                 }
             }
 
-            if(Schema::hasIndex('posts', ['status', 'published_at', 'unique'])) {
+            //$table->dropIndex(['status', 'published_at']);
+
+            if (Schema::hasIndex('posts', ['status', 'published_at', 'unique'])) {
                 $table->dropIndex('posts_status_published_at_index');
             }
+
 
             $table->boolean('status')->change();
         });

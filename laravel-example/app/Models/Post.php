@@ -4,13 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Category;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
 {
     use HasFactory, SoftDeletes;
-
     protected $table = "posts";
 
     protected $fillable = [
@@ -26,10 +25,10 @@ class Post extends Model
     ];
 
     protected $casts = [
-        'pubished_at' => 'datetime',
+        'published_at' => 'datetime',
         'tags' => 'array',
         'meta' => 'array',
-        'deleted_at' => 'datetime'
+        'deleted_at'   => 'datetime',
     ];
 
     public function user()
@@ -39,7 +38,7 @@ class Post extends Model
 
     public function categories()
     {
-        // Tabla pivot post_category
+        // Tabla pivote post_category
         return $this->belongsToMany(Category::class)->using(CategoryPost::class)->withTimestamps();
     }
 }

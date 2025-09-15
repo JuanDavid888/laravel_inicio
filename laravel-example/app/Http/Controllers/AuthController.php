@@ -32,6 +32,8 @@ class AuthController extends Controller
 
         $token = $tokenResult->accessToken;
 
+        Mail::to($user->email)->queue(new UserRegisteredMail($user)); //Queue
+
         return $this->success([
             'token_type' => 'Bearer',
             'access_token' => $token,
@@ -60,12 +62,7 @@ class AuthController extends Controller
         if ($defaultRole) {
             $user->roles()->syncWithoutDetaching([$defaultRole->id]);
         }
-
-        $user->load('roles');
-        
-        Mail::to($user->email)->queue(new UserRegisteredMail($user)); // Queue
-
-        return $this->success($user,'Usuario creado correctamente', 201);
+        return $this->success($user->load('roles'), 'Usuario creado correctamente', 201);
     }
 
     function me(Request $request)

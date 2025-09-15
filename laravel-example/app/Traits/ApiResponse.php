@@ -2,9 +2,11 @@
 
 namespace App\Traits;
 
-trait ApiResponse {
+trait ApiResponse
+{
 
-    protected function success($data, $message = 'OK', $code = 200) {
+    protected function success($data, $message = 'OK', $code = 200)
+    {
         return response()->json([
             'status' => 'success',
             'message' => $message,
@@ -12,11 +14,12 @@ trait ApiResponse {
         ], $code);
     }
 
-    protected function error($message, $code = 400, $errors = []) {
+    protected function error($message, $code = 400, $errors = [])
+    {
         return response()->json([
             'status' => 'error',
             'message' => $message,
-            'errors' => $errors,
+            'errors' => $errors
         ], $code);
     }
 }

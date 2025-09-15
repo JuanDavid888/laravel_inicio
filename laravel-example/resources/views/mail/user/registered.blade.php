@@ -1,16 +1,12 @@
 @component('mail::message')
+# ¡Hola, {{ $user->name }}!
 
-# !Hola, {{$user->name}}!
-
-Tu registro fue tan exitoso como tu destino!
-Ya puedes usar nuestra API, Crack, Idolo.
+Tu registro fue exitoso. Ya puedes autenticarte y usar la API.
 
 @component('mail::button', ['url' => config('app.url')])
-Ir a la app
+Ir a la App
 @endcomponent
 
-Gracias, con mucho cariño,
-
+Gracias,<br>
 {{ config('app.name') }}
-
 @endcomponent
