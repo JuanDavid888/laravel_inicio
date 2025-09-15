@@ -11,9 +11,7 @@ class CreatesUserTest extends TestCase
 {
 
     use RefreshDatabase;
-    /**
-     * A basic feature test example.
-     */
+
     public function test_puede_crear_un_usuario(): void
     {
         $user = User::factory()->create([
@@ -28,5 +26,14 @@ class CreatesUserTest extends TestCase
 
         // Verificar que el nombre corresponde
         $this->assertEquals('Adrian', $user->name);
+    }
+
+    public function test_el_usuario_tiene_un_email_valido(): void
+    {
+        $user = User::factory()->create();
+
+        $this->assertNotNull($user->email, 'El email del usuario es requerido');
+        
+        $this->assertStringContainsString('@', $user->email);
     }
 }
