@@ -9,7 +9,6 @@ use Tests\TestCase;
 
 class PostConfigTest extends TestCase
 {
-    
 
     public function test_fillable_y_casts_configurados(): void
     {

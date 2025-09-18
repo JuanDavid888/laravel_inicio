@@ -24,26 +24,25 @@ class PostTest extends TestCase
         $this->assertDatabaseHas('posts', ['id' => $post->id]);
         $this->assertIsArray($post->tags);
         $this->assertSame($tags, $post->tags);
-
         $this->assertIsArray($post->meta);
         $this->assertSame($meta, $post->meta);
-
-        // Formato casteo y revision con created_at
         $this->assertInstanceOf(\Carbon\CarbonInterface::class, $post->created_at);
     }
 
     public function test_estados_de_factory_post_published_y_draft()
     {
+        //use Carbon\Carbon;
         Carbon::setTestNow('2025-09-11 10:00:00');
+        //now()
 
         $published = Post::factory()->published()->create();
 
         $this->assertEquals('published', $published->status);
         $this->assertNotNull($published->published_at);
+
         $this->assertTrue($published->published_at->lessThanOrEqualTo(now()));
 
         $draft = Post::factory()->draft()->create();
-
         $this->assertEquals('draft', $draft->status);
         $this->assertNull($draft->published_at);
 

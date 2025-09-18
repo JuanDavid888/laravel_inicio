@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
-use App\Models\Post;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\Post;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -21,7 +21,8 @@ class CategoryTest extends TestCase
         $this->assertEquals(Str::slug($category->name), $category->slug);
     }
 
-    public function test_category_post_many_to_many(): void
+
+    public function test_category_posts_many_to_many(): void
     {
         $category = Category::factory()->create();
         $post = Post::factory()->create();
@@ -37,7 +38,7 @@ class CategoryTest extends TestCase
     {
         $category = Category::factory()->create();
         $post = Post::factory()->create();
-        
+
         // Si tu pivote tiene unique([post_id, category_id]), esto se mantiene
         $category->posts()->syncWithoutDetaching([$post->id]);
         $category->posts()->syncWithoutDetaching([$post->id]);
